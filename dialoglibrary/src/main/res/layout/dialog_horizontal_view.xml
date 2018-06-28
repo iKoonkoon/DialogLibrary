@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialog_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:background="@drawable/dialog_bg"
+    android:minHeight="56dp"
+    android:minWidth="120dp"
+    android:orientation="horizontal"
+    android:paddingBottom="12dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="12dp">
+    
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleSmallTitle"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:indeterminateTint="#7fffffff"
+        android:indeterminateTintMode="src_atop"
+        android:padding="10dp"/>
+    
+    <com.ikoon.dialoglibrary.view.GraduallyTextView
+        android:id="@+id/loading_text_gradually"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="#ffffff"
+        android:textSize="15sp"/>
+    
+    <com.ikoon.dialoglibrary.view.FadeInTextView
+        android:id="@+id/loading_text_fade"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="#ffffff"
+        android:textSize="15sp"/>
+    
+    <ImageView
+        android:id="@+id/tip_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    
+    <TextView
+        android:id="@+id/tip_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:textColor="#ffffff"
+        android:textSize="15sp"/>
+
+</RelativeLayout>

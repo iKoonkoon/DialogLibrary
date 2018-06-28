@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/DialogLibraryGitHub.iml" filepath="$PROJECT_DIR$/DialogLibraryGitHub.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/dialoglibrary/dialoglibrary.iml" filepath="$PROJECT_DIR$/dialoglibrary/dialoglibrary.iml" />
+      <module fileurl="file://C:\Develop\AndroidStudioProjects\DialogLibraryGitHub\test.iml" filepath="C:\Develop\AndroidStudioProjects\DialogLibraryGitHub\test.iml" />
+    </modules>
+  </component>
+</project>
