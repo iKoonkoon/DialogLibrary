@@ -1,4 +1,4 @@
-package com.ikoon.dialoglibrary.view;
+package com.ikoon.dialoglibrary;
 
 /**
  * @author MrKong
@@ -42,7 +42,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.ikoon.dialoglibrary.R;
 import com.ikoon.dialoglibrary.listener.OnHideAlertListener;
 import com.ikoon.dialoglibrary.listener.OnShowAlertListener;
 import com.ikoon.dialoglibrary.listener.SwipeDismissTouchListener;

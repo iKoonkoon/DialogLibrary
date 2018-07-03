@@ -3,40 +3,83 @@ package com.ikoon.dialoglibrary.helper;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.ikoon.dialoglibrary.view.GeneralDialog;
 import com.ikoon.dialoglibrary.listener.OnDismissListener;
+import com.ikoon.dialoglibrary.GeneralDialog;
 
 /**
  * @author MrKong
  * @date 2018/6/26
- * @description
+ * @description tip dialog 和 load dialog 启动帮助类
  */
 
 public class Dialogue
 {
-    private GeneralDialog load;
-    private static Dialogue dialogue;
+    private GeneralDialog mGeneralDialog;
+    private static volatile Dialogue mDialogue = null;
+    private static GeneralDialog generalDialog;
+    
+    private Dialogue(){}
+    
+    public static Dialogue getInstance(){
+        if(mDialogue == null){
+            synchronized (Dialogue.class){
+                if(mDialogue == null){
+                    mDialogue = new Dialogue();
+                }
+            }
+        }
+        return mDialogue;
+    }
     
     /**
-     * Creates the Alert 并维护对调用活动的引用
+     * 创建 dialog
      *
-     * @param mContext The calling Activity
-     * @return This Alerter
+     * @param mContext 上下文
+     * @return Dialogue
      */
-    public static Dialogue create(@NonNull final Context mContext, int dialogType)
+    public static Dialogue create(@NonNull final Context mContext)
     {
         if (mContext == null)
         {
             throw new IllegalArgumentException("Context cannot be null!");
         }
+    
         
-        if (dialogue == null)
+        generalDialog = new GeneralDialog(mContext);
+    
+        getInstance().setGeneralDialog(generalDialog);
+    
+        return getInstance();
+    }
+    
+    /**
+     * 设置dialog 主题
+     *
+     * @param type
+     * @return
+     */
+    public Dialogue setTheme(int type)
+    {
+        if (getGeneralDialog() != null)
         {
-            dialogue = new Dialogue();
-            dialogue.setGeneralDialog(new GeneralDialog(mContext, dialogType));
+            getGeneralDialog().setTheme(type);
         }
-        
-        return dialogue;
+        return this;
+    }
+    
+    /**
+     * 设置dialog 类型
+     *
+     * @param type
+     * @return
+     */
+    public Dialogue setType(int type)
+    {
+        if (getGeneralDialog() != null)
+        {
+            getGeneralDialog().setType(type);
+        }
+        return this;
     }
     
     /**
@@ -167,17 +210,6 @@ public class Dialogue
     }
     
     /**
-     * 展示dialog
-     */
-    public void show()
-    {
-        if (getGeneralDialog() != null)
-        {
-            getGeneralDialog().show();
-        }
-    }
-    
-    /**
      * 配置是否能返回键取消加载框
      *
      * @param isCancel
@@ -222,23 +254,45 @@ public class Dialogue
     
     
     /**
-     * set load
-     *
-     * @param load
+     * 展示dialog
      */
-    private void setGeneralDialog(final GeneralDialog load)
+    public void show()
     {
-        this.load = load;
+        if (getGeneralDialog() != null)
+        {
+            getGeneralDialog().show();
+        }
     }
     
     /**
-     * get load
+     * 消失dialog
+     */
+    public void dismiss()
+    {
+        if (getGeneralDialog() != null)
+        {
+            getGeneralDialog().dismiss();
+        }
+    }
+    
+    /**
+     * set
+     *
+     * @param generalDialog
+     */
+    private void setGeneralDialog(final GeneralDialog generalDialog)
+    {
+        this.mGeneralDialog = generalDialog;
+    }
+    
+    /**
+     * get
      *
      * @return
      */
     GeneralDialog getGeneralDialog()
     {
-        return load;
+        return mGeneralDialog;
     }
     
     

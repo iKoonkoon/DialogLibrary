@@ -1,22 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    tools:context="com.ikoon.dialoglibrary.MainActivity">
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
     
     <Button
-        android:id="@+id/bt_test"
-        android:layout_width="wrap_content"
+        android:id="@+id/bt_dialog_default"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="dinawo"/>
+        android:text="默认dialog" />
     
     <Button
-        android:id="@+id/bt_test1"
-        android:layout_width="wrap_content"
+        android:id="@+id/bt_dialog_type"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="dianwo"/>
+        android:text="设置dialog类型相关" />
+    
+    <Button
+        android:id="@+id/bt_dialog_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="设置text相关" />
+    
+    <Button
+        android:id="@+id/bt_dialog_bg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="设置背景相关" />
+    
+    <Button
+        android:id="@+id/bt_dialog_icon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="设置icon相关" />
+    
+    <Button
+        android:id="@+id/bt_dialog_listener"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="设置事件监听相关" />
 
 </LinearLayout>

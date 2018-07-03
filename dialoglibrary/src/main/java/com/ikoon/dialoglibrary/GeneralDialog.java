@@ -1,6 +1,5 @@
-package com.ikoon.dialoglibrary.view;
+package com.ikoon.dialoglibrary;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
@@ -8,10 +7,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.support.annotation.StyleRes;
 import android.support.v4.content.ContextCompat;
 import android.util.TypedValue;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -20,66 +17,78 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.ikoon.dialoglibrary.R;
 import com.ikoon.dialoglibrary.listener.OnDismissListener;
 import com.ikoon.dialoglibrary.utils.DimenUtils;
 import com.ikoon.dialoglibrary.view.FadeInTextView;
 import com.ikoon.dialoglibrary.view.GraduallyTextView;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+
 /**
  * @author MrKong
  * @date 2018/6/26
- * @description
+ * @description 自定义 tip dialog 和 load dialog 类
  */
 
 public class GeneralDialog
 {
     /**
-     * 不显示任何icon
+     * text dialog 类型状态码
      */
-    public static final int ICON_TYPE_NOTHING = 0;
+    public static final int TYPE_NOTHING = 0;
     /**
-     * Loading状态
+     * loading dialog 类型状态码
      */
-    public static final int ICON_TYPE_LOADING = 1;
+    public static final int TYPE_LOADING = 1;
     /**
-     * loading状态2
+     * loading dialog 类型状态码
+     * <p>
+     * 此类型暂时有问题 按照 loading 处理
      */
-    public static final int ICON_TYPE_LOADING2 = 5;
+    public static final int TYPE_LOADING2 = 1;
     /**
-     * 显示成功状态
+     * success dialog 类型状态码
      */
-    public static final int ICON_TYPE_SUCCESS = 2;
+    public static final int TYPE_SUCCESS = 2;
     /**
-     * 显示失败状态
+     * failed dialog 类型状态码
      */
-    public static final int ICON_TYPE_FAILED = 3;
+    public static final int TYPE_FAILED = 3;
     /**
-     * 显示信息状态
+     * info dialog 类型状态码
      */
-    public static final int ICON_TYPE_INFO = 4;
+    public static final int TYPE_INFO = 4;
     
     /**
-     * 默认成功图标
+     * 默认success dialog图标
      */
     public int SUCCESS_ICON = R.drawable.qmui_icon_notify_done;
     /**
-     * 默认失败图标
+     * 默认failed dialog图标
      */
     public int FAILED_ICON = R.drawable.qmui_icon_notify_error;
     /**
-     * 默认提示信息图标
+     * 默认info dialog图标
      */
     public int INFO_ICON = R.drawable.qmui_icon_notify_info;
     
     /**
-     * 消失监听
+     * 默认 dialog 消失时间
      */
-    private OnDismissListener listener;
     private int dismissTime = 2000;
+    /**
+     * 默认 dialog 主题
+     */
+    private static int DEFAULT_THEME = R.style.loading_dialog_no_shadow;
+    
+    private static Handler sHandler = new Handler(Looper.getMainLooper());
+    private OnDismissListener listener;
     
     private Context mContext;
-    private int currentType;
+    private int mType;
+    
     private View view;
     private LinearLayout dialogView;
     private ImageView tipImg;
@@ -87,23 +96,22 @@ public class GeneralDialog
     private ProgressBar progressBar;
     private GraduallyTextView loadingTextGradually;
     private FadeInTextView loadingTextFade;
-    private LoadDialog dialog;
+    private LoadDialogView dialog;
     
-    private static Handler sHandler = new Handler(Looper.getMainLooper());
     
-    public GeneralDialog(@NonNull final Context context, int type)
-    {
-        this(context, " ", type);
-    }
-    
-    public GeneralDialog(Context context, String info, int type)
+    public GeneralDialog(@NonNull final Context context)
     {
         this.mContext = context;
-        this.currentType = type;
-        initView(info, type);
+        initView(TYPE_LOADING);
+        initEvent();
     }
     
-    private void initView(String info, int type)
+    /**
+     * 初始化view
+     *
+     * @param type
+     */
+    private void initView(int type)
     {
         view = LayoutInflater.from(mContext).inflate(R.layout.dialog_view, null);
         
@@ -114,19 +122,56 @@ public class GeneralDialog
         tipImg = (ImageView) view.findViewById(R.id.tip_img);
         tipText = (TextView) view.findViewById(R.id.tip_text);
         
-        setType(info, type);
-        setDefaultTheme();
+        setTheme(DEFAULT_THEME);
+        setType(type);
     }
     
-    private void setType(String info, int type)
+    /**
+     * 初始化事件监听
+     */
+    protected void initEvent()
     {
-        loadingTextGradually.setText(info);
-        loadingTextFade.setTextString(info + ".", "...");
-        tipText.setText(info);
+        Observable<String> register = RxBus.getInstance().register("test");
+        register.observeOn(AndroidSchedulers.mainThread()).subscribe(new Consumer<String>()
+        {
+            @Override
+            public void accept(String str) throws Exception
+            {
+                dismiss();
+            }
+        });
+    }
+    
+    /**
+     * 设置dialog 主题
+     *
+     * @return
+     */
+    public void setTheme(int themeId)
+    {
+        if (dialog != null)
+        {
+            FrameLayout parent = (FrameLayout) dialogView.getParent();
+            parent.removeAllViews();
+        }
+        dialog = new LoadDialogView(mContext, themeId);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.setContentView(dialogView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+    }
+    
+    /**
+     * 设置dialog 类型
+     *
+     * @param type
+     */
+    public void setType(int type)
+    {
+        this.mType = type;
         
         switch (type)
         {
-            case ICON_TYPE_SUCCESS:
+            case TYPE_SUCCESS:
                 tipImg.setImageDrawable(ContextCompat.getDrawable(mContext, SUCCESS_ICON));
                 tipImg.setVisibility(View.VISIBLE);
                 tipText.setVisibility(View.VISIBLE);
@@ -135,7 +180,7 @@ public class GeneralDialog
                 loadingTextFade.setVisibility(View.GONE);
                 break;
             
-            case ICON_TYPE_FAILED:
+            case TYPE_FAILED:
                 tipImg.setImageDrawable(ContextCompat.getDrawable(mContext, FAILED_ICON));
                 tipImg.setVisibility(View.VISIBLE);
                 tipText.setVisibility(View.VISIBLE);
@@ -144,7 +189,7 @@ public class GeneralDialog
                 loadingTextFade.setVisibility(View.GONE);
                 break;
             
-            case ICON_TYPE_INFO:
+            case TYPE_INFO:
                 tipImg.setImageDrawable(ContextCompat.getDrawable(mContext, INFO_ICON));
                 tipImg.setVisibility(View.VISIBLE);
                 tipText.setVisibility(View.VISIBLE);
@@ -153,7 +198,7 @@ public class GeneralDialog
                 loadingTextFade.setVisibility(View.GONE);
                 break;
             
-            case ICON_TYPE_LOADING:
+            case TYPE_LOADING:
                 tipImg.setVisibility(View.GONE);
                 tipText.setVisibility(View.GONE);
                 progressBar.setVisibility(View.VISIBLE);
@@ -161,13 +206,13 @@ public class GeneralDialog
                 loadingTextFade.setVisibility(View.GONE);
                 break;
             
-            case ICON_TYPE_LOADING2:
-                tipImg.setVisibility(View.GONE);
-                tipText.setVisibility(View.GONE);
-                progressBar.setVisibility(View.VISIBLE);
-                loadingTextGradually.setVisibility(View.GONE);
-                loadingTextFade.setVisibility(View.VISIBLE);
-                break;
+//            case TYPE_LOADING2:
+//                tipImg.setVisibility(View.GONE);
+//                tipText.setVisibility(View.GONE);
+//                progressBar.setVisibility(View.VISIBLE);
+//                loadingTextGradually.setVisibility(View.GONE);
+//                loadingTextFade.setVisibility(View.VISIBLE);
+//                break;
             
             default:
                 
@@ -216,23 +261,24 @@ public class GeneralDialog
      */
     public void setIcon(int resId)
     {
-        switch (currentType)
+        switch (mType)
         {
-            case ICON_TYPE_SUCCESS:
+            case TYPE_SUCCESS:
                 SUCCESS_ICON = resId;
                 break;
             
-            case ICON_TYPE_FAILED:
+            case TYPE_FAILED:
                 FAILED_ICON = resId;
                 break;
             
-            case ICON_TYPE_INFO:
+            case TYPE_INFO:
                 INFO_ICON = resId;
                 break;
             
             default:
                 break;
         }
+        tipImg.setImageDrawable(ContextCompat.getDrawable(mContext, resId));
     }
     
     /**
@@ -242,9 +288,11 @@ public class GeneralDialog
      */
     public void setText(String text)
     {
-        setType(text, currentType);
+        tipText.setText(text);
+        loadingTextGradually.setText(text);
+        loadingTextFade.setTextString(text + ".", "...");
         
-        if (currentType != ICON_TYPE_LOADING)
+        if (mType != TYPE_LOADING && mType != TYPE_LOADING2)
         {
             tipImg.post(new Runnable()
             {
@@ -280,13 +328,9 @@ public class GeneralDialog
      */
     public void setTextColor(int colorId)
     {
-        if (currentType != ICON_TYPE_LOADING)
-        {
-            tipText.setTextColor(colorId);
-        } else
-        {
-            loadingTextGradually.setTextColor(colorId);
-        }
+        tipText.setTextColor(colorId);
+        loadingTextGradually.setTextColor(colorId);
+        loadingTextFade.setTextColor(colorId);
     }
     
     /**
@@ -297,13 +341,9 @@ public class GeneralDialog
      */
     public void setTextSize(int dimenSp)
     {
-        if (currentType != ICON_TYPE_LOADING)
-        {
-            tipText.setTextSize(TypedValue.COMPLEX_UNIT_SP, dimenSp);
-        } else
-        {
-            loadingTextGradually.setTextSize(TypedValue.COMPLEX_UNIT_SP, dimenSp);
-        }
+        tipText.setTextSize(TypedValue.COMPLEX_UNIT_SP, dimenSp);
+        loadingTextGradually.setTextSize(TypedValue.COMPLEX_UNIT_SP, dimenSp);
+        loadingTextFade.setTextSize(TypedValue.COMPLEX_UNIT_SP, dimenSp);
     }
     
     /**
@@ -376,7 +416,7 @@ public class GeneralDialog
         // 移除所有的message和callback,
         // 防止返回键dismiss后,callback没移除
         sHandler.removeCallbacksAndMessages(null);
-        if (this.currentType != ICON_TYPE_LOADING && this.currentType != ICON_TYPE_LOADING2)
+        if (this.mType != TYPE_LOADING && this.mType != TYPE_LOADING2)
         {
             if (loadingTextFade.isLoading())
             {
@@ -414,57 +454,6 @@ public class GeneralDialog
         if (listener != null)
         {
             listener.onDismissListener();
-        }
-    }
-    
-    /**
-     * 设置默认主题
-     *
-     * @return
-     */
-    private void setDefaultTheme()
-    {
-        if (dialog != null)
-        {
-            FrameLayout parent = (FrameLayout) dialogView.getParent();
-            parent.removeAllViews();
-        }
-        dialog = new LoadDialog(mContext, R.style.loading_dialog_no_shadow);
-        initDialog();
-    }
-    
-    private void initDialog()
-    {
-        dialog.setCancelable(true);
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.setContentView(dialogView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-    }
-    
-    class LoadDialog extends Dialog
-    {
-        
-        public LoadDialog(@NonNull Context context, @StyleRes int themeResId)
-        {
-            super(context, themeResId);
-        }
-        
-        @Override
-        public boolean onKeyDown(int keyCode, @NonNull KeyEvent event)
-        {
-            if (keyCode == KeyEvent.KEYCODE_BACK)
-            {
-                //拦截back键,防止loadview的内存泄漏
-                dialog.dismiss();
-                if (loadingTextGradually.isLoading())
-                {
-                    loadingTextGradually.stopLoading();
-                }
-                if (loadingTextFade.isLoading())
-                {
-                    loadingTextFade.stopFadeInAnimation();
-                }
-            }
-            return super.onKeyDown(keyCode, event);
         }
     }
     

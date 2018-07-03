@@ -42,30 +42,30 @@ public class GraduallyTextView extends AppCompatEditText
      * 单字时长
      */
     private float sigleDuration;
-
+    
     private ValueAnimator valueAnimator;//设置属性平移、缩放动画
-
+    
     public GraduallyTextView(Context context)
     {
         super(context);
         this.mContext = context;
         init();
     }
-
+    
     public GraduallyTextView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
         this.mContext = context;
         init();
     }
-
+    
     public GraduallyTextView(Context context, AttributeSet attrs, int defStyleAttr)
     {
         super(context, attrs, defStyleAttr);
         this.mContext = context;
         init();
     }
-
+    
     public void init()
     {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -75,35 +75,38 @@ public class GraduallyTextView extends AppCompatEditText
         setFocusable(false);
         setEnabled(false);
         setFocusableInTouchMode(false);
-        //设置平移动画
+        //设置平移动画·
         valueAnimator = ValueAnimator.ofFloat(0, 100).setDuration(duration);
         valueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         valueAnimator.setRepeatCount(Animation.INFINITE);
         valueAnimator.setRepeatMode(ValueAnimator.RESTART);
-        valueAnimator.addUpdateListener(
-                new ValueAnimator.AnimatorUpdateListener()
-                {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation)
-                    {
-                        //设置监听，当动画更新的时候触发重绘
-                        progress = (Float) animation.getAnimatedValue();
-                        GraduallyTextView.this.invalidate();
-                    }
-                });
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
+        {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation)
+            {
+                //设置监听，当动画更新的时候触发重绘
+                progress = (Float) animation.getAnimatedValue();
+                GraduallyTextView.this.invalidate();
+            }
+        });
     }
-
+    
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
     {
 //        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mPaint.setTextSize(getTextSize());
+        if (TextUtils.isEmpty(text))
+        {
+            text = " ";
+        }
         float width = mPaint.measureText(text.toString());
         float fontSpacing = mPaint.getFontSpacing();
         Log.e("GraduallyTextView", "onMeasure(GraduallyTextView.java:99)" + fontSpacing);
         setMeasuredDimension((int) width, (int) fontSpacing);
     }
-
+    
     //设置开始读取的方法
     public void startLoading()
     {
@@ -113,20 +116,20 @@ public class GraduallyTextView extends AppCompatEditText
             return;
         }
         textLength = getText().length();
-        if (TextUtils.isEmpty(getText().toString  ()))
+        if (TextUtils.isEmpty(getText().toString()))
         {
             return;
         }
         isLoading = true;
         isStop = false;
         text = getText();
-
+        
         mPaint.setTextSize(getTextSize());
         mPaint.setColor(getCurrentTextColor());
         int height = (int) mPaint.getFontSpacing();
         //计算startY的值,应该是dialog中心点需要下移的值
         //计算方法startY = (progressbarHeight +marginTop+loadviewHeight)/2
-        startY = (int) (height + DimenUtils.dpToPx(mContext,60)) / 2;
+        startY = (int) (height + DimenUtils.dpToPx(mContext, 60)) / 2;
         Log.e("GraduallyTextView", "run(GraduallyTextView.java:132)" + startY);
         setMinWidth(getWidth());
         setText("");//清空
@@ -135,12 +138,12 @@ public class GraduallyTextView extends AppCompatEditText
         //计算单个字的progress
         sigleDuration = 100f / textLength;
     }
-
+    
     public boolean isLoading()
     {
         return isLoading;
     }
-
+    
     //停止loading的方法
     public void stopLoading()
     {
@@ -153,13 +156,17 @@ public class GraduallyTextView extends AppCompatEditText
             setText(text);
         }
     }
-
-    //设置时长
+    
+    /**
+     * 设置时长
+     *
+     * @param duration
+     */
     public void setDuration(int duration)
     {
         this.duration = duration;
     }
-
+    
     @Override
     protected void onVisibilityChanged(View changedView, int visibility)
     {
@@ -188,8 +195,15 @@ public class GraduallyTextView extends AppCompatEditText
             }
         }
     }
-
-    //重写ondraw方法，如果还在loading，而且进度还小于1,则让它和透明度联动
+    
+    
+    /**
+     * 重写onDraw方法
+     * <p>
+     * 如果还在loading，而且进度还小于1,则让它和透明度联动
+     *
+     * @param canvas
+     */
     @Override
     protected void onDraw(Canvas canvas)
     {
@@ -211,8 +225,9 @@ public class GraduallyTextView extends AppCompatEditText
             {
                 //即将显示那一个字的透明度
                 //measureText测量出text的宽度
-                canvas.drawText(String.valueOf(text.charAt(nextOne)), 0, 1,
-                        getPaint().measureText(text.subSequence(0, nextOne).toString()), startY, mPaint);
+                canvas.drawText(String.valueOf(text.charAt(nextOne)), 0, 1, getPaint().measureText(text
+                        .subSequence(0, nextOne)
+                        .toString()), startY, mPaint);
             }
         }
     }

@@ -26,7 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
-import com.ikoon.dialoglibrary.view.Alert;
+import com.ikoon.dialoglibrary.Alert;
 import com.ikoon.dialoglibrary.listener.OnHideAlertListener;
 import com.ikoon.dialoglibrary.listener.OnShowAlertListener;
 import com.ikoon.dialoglibrary.R;
